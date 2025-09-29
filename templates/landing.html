@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center text-white">
+            <h1 class="display-4 mb-4">
+                <i class="fas fa-magic"></i> AI Post Genie
+            </h1>
+            <p class="lead mb-5">Generate engaging social media content with the power of AI. Create 5 posts, 10 hashtags, and a complete posting schedule in seconds!</p>
+            
+            <div class="row mb-5">
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-dark">
+                            <i class="fas fa-edit fa-3x text-primary mb-3"></i>
+                            <h5>Smart Content</h5>
+                            <p>AI-powered posts tailored to your niche and tone</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-dark">
+                            <i class="fas fa-hashtag fa-3x text-primary mb-3"></i>
+                            <h5>Trending Hashtags</h5>
+                            <p>10 relevant hashtags to boost your reach</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-dark">
+                            <i class="fas fa-calendar fa-3x text-primary mb-3"></i>
+                            <h5>Posting Schedule</h5>
+                            <p>7-day optimized posting schedule</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body text-dark">
+                    <h3 class="mb-4">Try AI Post Genie</h3>
+                    <form id="demo-form">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <select class="form-select" id="demo-niche" required>
+                                    <option value="">Select Niche</option>
+                                    <option value="fitness">Fitness</option>
+                                    <option value="food">Food</option>
+                                    <option value="fashion">Fashion</option>
+                                    <option value="tech">Technology</option>
+                                    <option value="travel">Travel</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="demo-topic" placeholder="Enter topic (e.g., yoga tips)" required>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="demo-tone" required>
+                                    <option value="">Select Tone</option>
+                                    <option value="motivational">Motivational</option>
+                                    <option value="funny">Funny</option>
+                                    <option value="informative">Informative</option>
+                                    <option value="casual">Casual</option>
+                                    <option value="professional">Professional</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="{{ url_for('replit_auth.login') }}" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-sign-in-alt"></i> Get Started Free
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4">
+                        <p class="mb-2"><strong>Free Plan:</strong> 1 generation per day</p>
+                        <p class="mb-0"><strong>Pro Plan:</strong> Unlimited generations for $9/month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

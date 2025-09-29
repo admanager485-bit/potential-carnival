@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AI Post Genie{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4 text-white">
+                <div>
+                    <h2>Welcome back, {{ user.first_name or 'User' }}!</h2>
+                    <p class="mb-0">
+                        Plan: <span class="badge bg-{{ 'success' if user.subscription_status == 'paid' else 'warning' }}">
+                            {{ 'Pro' if user.subscription_status == 'paid' else 'Free' }}
+                        </span>
+                        {% if user.subscription_status == 'free' %}
+                            | Generations today: {{ user.generations_today }}/1
+                        {% endif %}
+                    </p>
+                </div>
+                {% if user.subscription_status == 'free' %}
+                <form action="{{ url_for('create_checkout_session') }}" method="post">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-crown"></i> Upgrade to Pro - $9/month
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-magic"></i> Generate Content</h5>
+                </div>
+                <div class="card-body">
+                    <form id="content-form">
+                        <div class="mb-3">
+                            <label for="niche" class="form-label">Niche *</label>
+                            <select class="form-select" id="niche" required>
+                                <option value="">Select your niche</option>
+                                <option value="fitness">Fitness</option>
+                                <option value="food">Food & Cooking</option>
+                                <option value="fashion">Fashion & Style</option>
+                                <option value="tech">Technology</option>
+                                <option value="travel">Travel</option>
+                                <option value="business">Business</option>
+                                <option value="lifestyle">Lifestyle</option>
+                                <option value="beauty">Beauty</option>
+                                <option value="education">Education</option>
+                                <option value="entertainment">Entertainment</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="topic" class="form-label">Topic *</label>
+                            <input type="text" class="form-control" id="topic" placeholder="e.g., morning workout routines" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tone" class="form-label">Tone *</label>
+                            <select class="form-select" id="tone" required>
+                                <option value="">Select tone</option>
+                                <option value="motivational">Motivational</option>
+                                <option value="funny">Funny</option>
+                                <option value="informative">Informative</option>
+                                <option value="casual">Casual</option>
+                                <option value="professional">Professional</option>
+                                <option value="inspirational">Inspirational</option>
+                                <option value="friendly">Friendly</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" id="generate-btn">
+                            <i class="fas fa-magic"></i> Generate Content
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Usage Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h3 class="text-primary">{{ user.generations_today }}</h3>
+                            <p class="mb-0">Today</p>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-success">{{ recent_generations|length }}</h3>
+                            <p class="mb-0">Recent</p>
+                        </div>
+                    </div>
+                    {% if user.subscription_status == 'free' %}
+                    <div class="mt-3">
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ (user.generations_today / 1 * 100) }}%"
+                                 aria-valuenow="{{ user.generations_today }}" 
+                                 aria-valuemin="0" aria-valuemax="1">
+                                {{ user.generations_today }}/1
+                            </div>
+                        </div>
+                        <small class="text-muted">Daily limit (upgrade for unlimited)</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generated Content Display -->
+    <div id="content-results" style="display: none;">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-star"></i> Generated Content</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-6 mb-4">
+                                <h6><i class="fas fa-edit"></i> Social Media Posts</h6>
+                                <div id="posts-container"></div>
+                            </div>
+                            <div class="col-lg-3 mb-4">
+                                <h6><i class="fas fa-hashtag"></i> Hashtags</h6>
+                                <div id="hashtags-container"></div>
+                            </div>
+                            <div class="col-lg-3 mb-4">
+                                <h6><i class="fas fa-calendar"></i> Posting Schedule</h6>
+                                <div id="schedule-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Generations -->
+    {% if recent_generations %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Recent Generations</h5>
+                </div>
+                <div class="card-body">
+                    {% for generation in recent_generations %}
+                    <div class="border-bottom pb-2 mb-2">
+                        <small class="text-muted">{{ generation.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        <p class="mb-1"><strong>{{ generation.niche|title }}</strong> - {{ generation.topic }}</p>
+                        <span class="badge bg-secondary">{{ generation.tone|title }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('content-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('generate-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    btn.disabled = true;
+    
+    const formData = {
+        niche: document.getElementById('niche').value,
+        topic: document.getElementById('topic').value,
+        tone: document.getElementById('tone').value
+    };
+    
+    try {
+        const response = await fetch('/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayContent(data);
+            document.getElementById('content-results').style.display = 'block';
+            document.getElementById('content-results').scrollIntoView({ behavior: 'smooth' });
+        } else {
+            alert(data.error || 'An error occurred');
+        }
+    } catch (error) {
+        alert('Network error: ' + error.message);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+
+function displayContent(data) {
+    // Display posts
+    const postsContainer = document.getElementById('posts-container');
+    postsContainer.innerHTML = '';
+    data.posts.forEach((post, index) => {
+        const postDiv = document.createElement('div');
+        postDiv.className = 'post-card mb-2';
+        postDiv.innerHTML = `<strong>Post ${index + 1}:</strong><br>${post}`;
+        postsContainer.appendChild(postDiv);
+    });
+    
+    // Display hashtags
+    const hashtagsContainer = document.getElementById('hashtags-container');
+    hashtagsContainer.innerHTML = '';
+    data.hashtags.forEach(hashtag => {
+        const span = document.createElement('span');
+        span.className = 'hashtag';
+        span.textContent = hashtag;
+        hashtagsContainer.appendChild(span);
+    });
+    
+    // Display schedule
+    const scheduleContainer = document.getElementById('schedule-container');
+    scheduleContainer.innerHTML = '';
+    data.schedule.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'mb-2';
+        div.innerHTML = `<strong>${item.day}</strong><br><small>${item.time} - ${item.post}</small>`;
+        scheduleContainer.appendChild(div);
+    });
+}
+</script>
+{% endblock %}
