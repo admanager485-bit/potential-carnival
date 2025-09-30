@@ -1,4 +1,5 @@
 flask==2.0.1
+werkzeug==2.0.3  # Compatible with Flask 2.0.1
 openai==0.27.0
 stripe==5.0.0
 gunicorn==20.1.0
